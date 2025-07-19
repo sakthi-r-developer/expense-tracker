@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Expense Tracker</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f9fc;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .container {
+    max-width: 480px;
+    width: 100%;
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+  }
+  form {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  input[type="number"],
+  input[type="text"],
+  select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+  }
+  input[type="number"]:focus,
+  input[type="text"]:focus,
+  select:focus {
+    outline: none;
+    border-color: #4f46e5;
+  }
+  button {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #4338ca;
+  }
+  .expense-list {
+    margin-bottom: 20px;
+  }
+  .expense-item {
+    background: #eef2ff;
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .expense-details {
+    display: flex;
+    flex-direction: column;
+  }
+  .expense-category {
+    font-weight: 600;
+    color: #4f46e5;
+  }
+  .expense-description {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  .expense-amount {
+    font-weight: 700;
+    color: #111827;
+    margin-right: 20px;
+  }
+  .delete-btn {
+    background: #ef4444;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+  }
+  .delete-btn:hover {
+    background: #b91c1c;
+  }
+  .total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: right;
+    color: #111827;
+  }
+
+  @media (max-width: 520px) {
+    .container {
+      padding: 15px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Expense Tracker</h1>
+  <form id="expense-form">
+    <input type="number" id="amount" placeholder="Amount (₹)" min="0.01" step="0.01" required />
+    <select id="category" required>
+      <option value="" disabled selected>Select category</option>
+      <option value="Food">Food</option>
+      <option value="Transport">Transport</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Bills">Bills</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" id="description" placeholder="Description (optional)" maxlength="30" />
+    <button type="submit">Add Expense</button>
+  </form>
+
+  <div class="expense-list" id="expense-list">
+    <!-- Expenses will appear here -->
+  </div>
+
+  <div class="total" id="total-expense">Total: ₹0.00</div>
+</div>
+
+<script>
+  const expenseForm = document.getElementById('expense-form');
+  const expenseList = document.getElementById('expense-list');
+  const totalExpenseEl = document.getElementById('total-expense');
+
+  let expenses = [];
+
+  function renderExpenses() {
+    expenseList.innerHTML = '';
+
+    if (expenses.length === 0) {
+      expenseList.innerHTML = '<p style="color:#666; text-align:center;">No expenses added yet.</p>';
+      totalExpenseEl.textContent = 'Total: ₹0.00';
+      return;
+    }
+
+    let total = 0;
+
+    expenses.forEach((expense, index) => {
+      total += expense.amount;
+
+      const item = document.createElement('div');
+      item.classList.add('expense-item');
+
+      item.innerHTML = `
+        <div class="expense-details">
+          <div class="expense-category">${expense.category}</div>
+          <div class="expense-description">${expense.description || '-'}</div>
+        </div>
+        <div>
+          <span class="expense-amount">₹${expense.amount.toFixed(2)}</span>
+          <button class="delete-btn" data-index="${index}">Delete</button>
+        </div>
+      `;
+
+      expenseList.appendChild(item);
+    });
+
+    totalExpenseEl.textContent = `Total: ₹${total.toFixed(2)}`;
+  }
+
+  expenseForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const amount = parseFloat(document.getElementById('amount').value);
+    const category = document.getElementById('category').value;
+    const description = document.getElementById('description').value.trim();
+
+    if (!amount || amount <= 0 || !category) {
+      alert('Please enter a valid amount and select a category.');
+      return;
+    }
+
+    expenses.push({ amount, category, description });
+
+    expenseForm.reset();
+    renderExpenses();
+  });
+
+  expenseList.addEventListener('click', e => {
+    if (e.target.classList.contains('delete-btn')) {
+      const index = e.target.getAttribute('data-index');
+      expenses.splice(index, 1);
+      renderExpenses();
+    }
+  });
+
+  // Initial render
+  renderExpenses();
+</script>
+
+</body>
+</html>
+
